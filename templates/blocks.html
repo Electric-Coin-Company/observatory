@@ -34,7 +34,7 @@
         <td>{{ block[3] }}</td>
         <td>{{ block[4] }}</td>
         <td>{{ block[5] }}</td>
-        <td>{{ block[7] }}</td>
+        <td>{{ block[7] | timestamp }}</td>
         <td>{{ block[8] }}</td>
         <td>{{ block[9] }}</td>
         <td>{{ block[10] }}</td>
@@ -42,7 +42,7 @@
         <td>{{ block[12] }}</td>
         <td>{{ block[13] }}</td>
         <td>{{ block[14] }}</td>
-        <td>{{ block[15] }}</td>
+        <td>{{ block[15] | timestamp }}</td>
       </tr>
       {% endfor %}
    </table>
