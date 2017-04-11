@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Zcash Block Observatory</title>
+    <link rel="stylesheet" href="/static/styles.css" type="text/css" media="all" />
+    <meta name="description" content="Zcash Block Observatory">
+    <meta name="author" content="Zerocoin Electronic Coin Company">
+  </head>
+  <body>
+    <table>
+      <tr>
+        <th>hash</th>
+        <th>confirmations</th>
+        <th>size</th>
+        <th>height</th>
+        <th>version</th>
+        <th>merkleroot</th>
+        <th>time</th>
+        <th>nonce</th>
+        <th>bits</th>
+        <th>difficulty</th>
+        <th>chainwork</th>
+        <th>anchor</th>
+        <th>previousblockhash</th>
+        <th>nextblockhash</th>
+        <th>arrivaltime</th>
+      </tr>
+      {% for block in blocks %}
+      <tr>
+        <td>{{ block[0] }}</td>
+        <td>{{ block[1] }}</td>
+        <td>{{ block[2] }}</td>
+        <td>{{ block[3] }}</td>
+        <td>{{ block[4] }}</td>
+        <td>{{ block[5] }}</td>
+        <td>{{ block[7] }}</td>
+        <td>{{ block[8] }}</td>
+        <td>{{ block[9] }}</td>
+        <td>{{ block[10] }}</td>
+        <td>{{ block[11] }}</td>
+        <td>{{ block[12] }}</td>
+        <td>{{ block[13] }}</td>
+        <td>{{ block[14] }}</td>
+        <td>{{ block[15] }}</td>
+      </tr>
+      {% endfor %}
+   </table>
+</body>
+</html>
