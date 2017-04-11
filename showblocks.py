@@ -16,12 +16,6 @@ def get_blocks():
     blocks = c.fetchall()
     return blocks
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, 'blocks', None)
-    if db is not None:
-        db.close()
-
 @app.route('/')
 def index():
     return render_template('blocks.html', blocks = get_blocks())
