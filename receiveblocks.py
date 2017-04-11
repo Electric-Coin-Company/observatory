@@ -68,4 +68,4 @@ def index():
 
 if __name__ == '__main__':
     createdb()
-    #app.run(host='0.0.0.0', port=int('8200'))
+    app.run(host='0.0.0.0', port=int('8200'))
