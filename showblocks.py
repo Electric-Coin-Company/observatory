@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 from functools import wraps
@@ -44,6 +44,14 @@ def get_txs(block_hash):
     txs = [dict(tx) for tx in c.fetchall()]
     return txs
 
+def validate_input(search_string):
+    if len(search_string) != 64:
+        return None
+    if re.fullmatch(r"[A-Fa-f0-9]{64}", search_string) is None:
+        return None
+    else:
+        return search_string
+
 @app.template_filter('timestamp')
 def _jinja2_filter_timestamp(unix_epoch):
     return time.ctime(unix_epoch)
@@ -55,13 +63,16 @@ def index():
 
 @app.route('/block', methods = ['GET', 'POST'])
 def show_block():
+    search_string = validate_input(request.values.get('search').strip().lower())
+    if search_string is None:
+        return ('', 204)
     try:
-        block = get_blocks(request.values.get('search').strip())
+        block = get_blocks(search_string)
         return render_template('block.html', block = block)
     except:
         pass
     try:
-        block_hash = find_block(request.values.get('search').strip())
+        block_hash = find_block(search_string)
         block = get_blocks(block_hash)
         return render_template('block.html', block = block)
     except:
