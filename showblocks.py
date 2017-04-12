@@ -11,10 +11,22 @@ app.config.from_object(config.FlaskConfig)
 
 def get_blocks():
     conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute('SELECT * FROM blocks')
-    blocks = c.fetchall()
+    c.execute("SELECT * FROM blocks")
+    blocks = [dict(block) for block in c.fetchall()]
+    for block in blocks:
+        txs = get_txs(block['hash'])
+        block['tx'] = txs
     return blocks
+
+def get_txs(block_hash):
+    conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT tx FROM tx WHERE hash=:hash', {"hash": block_hash})
+    txs = [dict(tx) for tx in c.fetchall()]
+    return txs
 
 @app.template_filter('timestamp')
 def _jinja2_filter_timestamp(unix_epoch):
@@ -22,7 +34,8 @@ def _jinja2_filter_timestamp(unix_epoch):
 
 @app.route('/')
 def index():
-    return render_template('blocks.html', blocks = get_blocks())
+    blocks = get_blocks()
+    return render_template('blocks.html', blocks = blocks)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int('8201'))

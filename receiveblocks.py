@@ -25,7 +25,6 @@ def createdb():
         height REAL NOT NULL, \
         version REAL NOT NULL, \
         merkleroot TEXT(100) NOT NULL, \
-        tx BLOB, \
         time REAL NOT NULL, \
         nonce TEXT(100) NOT NULL, \
         bits TEXT(50) NOT NULL, \

@@ -16,6 +16,7 @@
         <th>height</th>
         <th>version</th>
         <th>merkleroot</th>
+        <th>txs</th>
         <th>time</th>
         <th>nonce</th>
         <th>bits</th>
@@ -28,21 +29,26 @@
       </tr>
       {% for block in blocks %}
       <tr>
-        <td>{{ block[0] }}</td>
-        <td>{{ block[1] }}</td>
-        <td>{{ block[2] }}</td>
-        <td>{{ block[3] }}</td>
-        <td>{{ block[4] }}</td>
-        <td>{{ block[5] }}</td>
-        <td>{{ block[7] | timestamp }}</td>
-        <td>{{ block[8] }}</td>
-        <td>{{ block[9] }}</td>
-        <td>{{ block[10] }}</td>
-        <td>{{ block[11] }}</td>
-        <td>{{ block[12] }}</td>
-        <td>{{ block[13] }}</td>
-        <td>{{ block[14] }}</td>
-        <td>{{ block[15] | timestamp }}</td>
+        <td>{{ block['hash'] }}</td>
+        <td>{{ block['confirmations'] }}</td>
+        <td>{{ block['size'] }}</td>
+        <td>{{ block['height'] }}</td>
+        <td>{{ block['version'] }}</td>
+        <td>{{ block['merkleroot'] }}</td>
+        <td>
+        {% for tx in block['tx'] %}
+        {{ tx['tx'] }}<br>
+        {% endfor %}
+        </td>
+        <td>{{ block['time'] | timestamp }}</td>
+        <td>{{ block['nonce'] }}</td>
+        <td>{{ block['bits'] }}</td>
+        <td>{{ block['difficulty'] }}</td>
+        <td>{{ block['chainwork'] }}</td>
+        <td>{{ block['anchor'] }}</td>
+        <td>{{ block['previousblockhash'] }}</td>
+        <td>{{ block['nextblockhash'] }}</td>
+        <td>{{ block['arrivaltime'] | timestamp }}</td>
       </tr>
       {% endfor %}
    </table>
