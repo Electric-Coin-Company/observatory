@@ -63,13 +63,7 @@
       </tr>
       <tr>
         <th>nextblockhash</th>
-        <td>
-          {% if block['nextblockhash'] is not None %}
-          <a href="/block?search={{ block['nextblockhash'] }}" style="text-decoration: none;">{{ block['nextblockhash'] }}
-          {% else %}
-          block['nextblockhash']
-          {% endif %}
-        </td>
+        <td>{{ block['nextblockhash'] }}</td>
       </tr>
       <tr>
         <th>arrivaltime</th>

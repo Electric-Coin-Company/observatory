@@ -10,6 +10,14 @@ db_file = 'blocks.sqlite'
 app = Flask(__name__)
 app.config.from_object(config.FlaskConfig)
 
+def find_block(txid):
+    conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT hash FROM tx WHERE tx=:txid', {"txid": txid})
+    block_hash = c.fetchone()
+    return str(block_hash['hash'])
+
 def get_blocks(block_hash=None):
     conn = sqlite3.connect(db_file)
     conn.row_factory = sqlite3.Row
@@ -21,7 +29,7 @@ def get_blocks(block_hash=None):
         block['tx'] = txs
         return block
     else:
-        c.execute('SELECT * FROM blocks ORDER by height DESC')
+        c.execute('SELECT hash, height, size, time FROM blocks ORDER by height DESC')
         blocks = [dict(block) for block in c.fetchall()]
         for block in blocks:
             txs = get_txs(block['hash'])
@@ -48,7 +56,13 @@ def index():
 @app.route('/block', methods = ['GET', 'POST'])
 def show_block():
     try:
-        block = get_blocks(request.values.get('search'))
+        block = get_blocks(request.values.get('search').strip())
+        return render_template('block.html', block = block)
+    except:
+        pass
+    try:
+        block_hash = find_block(request.values.get('search').strip())
+        block = get_blocks(block_hash)
         return render_template('block.html', block = block)
     except:
         return ('', 204)
