@@ -3,10 +3,8 @@
     <table class="table">
       <tr>
         <th>hash</th>
-        <th>confirmations</th>
-        <th>size</th>
         <th>height</th>
-        <th>version</th>
+        <th>size</th>
         <th>merkleroot</th>
         <th>txs</th>
         <th>time</th>
@@ -21,11 +19,9 @@
       </tr>
       {% for block in blocks %}
       <tr>
-        <td>{{ block['hash'] }}</td>
-        <td>{{ block['confirmations'] }}</td>
-        <td>{{ block['size'] }}</td>
-        <td>{{ block['height'] }}</td>
-        <td>{{ block['version'] }}</td>
+        <td><a href="/block?search={{ block['hash'] }}" style="text-decoration: none;">{{ block['hash'] }}</a></td>
+        <td>{{ block['height'] | int }}</td>
+        <td>{{ block['size'] | int }}</td>
         <td>{{ block['merkleroot'] }}</td>
         <td>
         {% for tx in block['tx'] %}

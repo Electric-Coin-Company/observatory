@@ -21,7 +21,7 @@ def get_blocks(block_hash=None):
         block['tx'] = txs
         return block
     else:
-        c.execute('SELECT * FROM blocks')
+        c.execute('SELECT * FROM blocks ORDER by height DESC')
         blocks = [dict(block) for block in c.fetchall()]
         for block in blocks:
             txs = get_txs(block['hash'])
@@ -47,12 +47,10 @@ def index():
 
 @app.route('/block', methods = ['GET', 'POST'])
 def show_block():
-    if request.method == 'POST' and re.match('^multipart/form-data*', request.content_type):
-        block = get_blocks(request.form.get('input'))
-        print block
-        print request.form.get('input')
+    try:
+        block = get_blocks(request.values.get('search'))
         return render_template('block.html', block = block)
-    else:
+    except:
         return ('', 204)
 
 if __name__ == '__main__':

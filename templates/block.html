@@ -6,16 +6,16 @@
         <td>{{ block['hash'] }}</td>
       </tr>
       <tr>
+        <th>height</th>
+        <td>{{ block['height'] | int }}</td>
+      </tr>
+      <tr>
         <th>confirmations</th>
-        <td>{{ block['confirmations'] }}</td>
+        <td>{{ block['confirmations'] | int }}</td>
       </tr>
       <tr>
         <th>size</th>
-        <td>{{ block['size'] }}</td>
-      </tr>
-      <tr>
-        <th>height</th>
-        <td>{{ block['height'] }}</td>
+        <td>{{ block['size'] | int }}</td>
       </tr>
       <tr>
         <th>version</th>
@@ -59,11 +59,17 @@
       </tr>
       <tr>
         <th>previousblockhash</th>
-        <td>{{ block['previousblockhash'] }}</td>
+        <td><a href="/block?search={{ block['previousblockhash'] }}" style="text-decoration: none;">{{ block['previousblockhash'] }}</td>
       </tr>
       <tr>
         <th>nextblockhash</th>
-        <td>{{ block['nextblockhash'] }}</td>
+        <td>
+          {% if block['nextblockhash'] is not None %}
+          <a href="/block?search={{ block['nextblockhash'] }}" style="text-decoration: none;">{{ block['nextblockhash'] }}
+          {% else %}
+          block['nextblockhash']
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>arrivaltime</th>
