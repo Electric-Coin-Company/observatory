@@ -5,38 +5,20 @@
         <th>hash</th>
         <th>height</th>
         <th>size</th>
-        <th>merkleroot</th>
         <th>txs</th>
         <th>time</th>
-        <th>nonce</th>
-        <th>bits</th>
-        <th>difficulty</th>
-        <th>chainwork</th>
-        <th>anchor</th>
-        <th>previousblockhash</th>
-        <th>nextblockhash</th>
-        <th>arrivaltime</th>
       </tr>
       {% for block in blocks %}
       <tr>
         <td><a href="/block?search={{ block['hash'] }}" style="text-decoration: none;">{{ block['hash'] }}</a></td>
         <td>{{ block['height'] | int }}</td>
         <td>{{ block['size'] | int }}</td>
-        <td>{{ block['merkleroot'] }}</td>
         <td>
         {% for tx in block['tx'] %}
         {{ tx['tx'] }}<br>
         {% endfor %}
         </td>
         <td>{{ block['time'] | timestamp }}</td>
-        <td>{{ block['nonce'] }}</td>
-        <td>{{ block['bits'] }}</td>
-        <td>{{ block['difficulty'] }}</td>
-        <td>{{ block['chainwork'] }}</td>
-        <td>{{ block['anchor'] }}</td>
-        <td>{{ block['previousblockhash'] }}</td>
-        <td>{{ block['nextblockhash'] }}</td>
-        <td>{{ block['arrivaltime'] | timestamp }}</td>
       </tr>
       {% endfor %}
    </table>
