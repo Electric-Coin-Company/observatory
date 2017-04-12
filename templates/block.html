@@ -3,45 +3,71 @@
     <table class="table">
       <tr>
         <th>hash</th>
-        <th>confirmations</th>
-        <th>size</th>
-        <th>height</th>
-        <th>version</th>
-        <th>merkleroot</th>
-        <th>txs</th>
-        <th>time</th>
-        <th>nonce</th>
-        <th>bits</th>
-        <th>difficulty</th>
-        <th>chainwork</th>
-        <th>anchor</th>
-        <th>previousblockhash</th>
-        <th>nextblockhash</th>
-        <th>arrivaltime</th>
-      </tr>
-      {% for block in blocks %}
-      <tr>
         <td>{{ block['hash'] }}</td>
+      </tr>
+      <tr>
+        <th>confirmations</th>
         <td>{{ block['confirmations'] }}</td>
+      </tr>
+      <tr>
+        <th>size</th>
         <td>{{ block['size'] }}</td>
+      </tr>
+      <tr>
+        <th>height</th>
         <td>{{ block['height'] }}</td>
+      </tr>
+      <tr>
+        <th>version</th>
         <td>{{ block['version'] }}</td>
+      </tr>
+      <tr>
+        <th>merkleroot</th>
         <td>{{ block['merkleroot'] }}</td>
+      </tr>
+      <tr>
+        <th>txs</th>
         <td>
         {% for tx in block['tx'] %}
         {{ tx['tx'] }}<br>
         {% endfor %}
         </td>
+      </tr>
+      <tr>
+        <th>time</th>
         <td>{{ block['time'] | timestamp }}</td>
+      </tr>
+      <tr>
+        <th>nonce</th>
         <td>{{ block['nonce'] }}</td>
+      </tr>
+      <tr>
+        <th>bits</th>
         <td>{{ block['bits'] }}</td>
+      </tr>
+      <tr>
+        <th>difficulty</th>
         <td>{{ block['difficulty'] }}</td>
+      </tr>
+      <tr>
+        <th>chainwork</th>
         <td>{{ block['chainwork'] }}</td>
+      </tr>
+      <tr>
+        <th>anchor</th>
         <td>{{ block['anchor'] }}</td>
+      </tr>
+      <tr>
+        <th>previousblockhash</th>
         <td>{{ block['previousblockhash'] }}</td>
+      </tr>
+      <tr>
+        <th>nextblockhash</th>
         <td>{{ block['nextblockhash'] }}</td>
+      </tr>
+      <tr>
+        <th>arrivaltime</th>
         <td>{{ block['arrivaltime'] | timestamp }}</td>
       </tr>
-      {% endfor %}
    </table>
   {% endblock %}
