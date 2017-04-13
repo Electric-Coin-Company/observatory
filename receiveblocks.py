@@ -33,7 +33,7 @@ def createdb():
         anchor TEXT(100) NOT NULL, \
         previousblockhash TEXT(100), \
         nextblockhash TEXT(100), \
-        arrivaltime REAL NOT NULL, \
+        arrivaltime REAL, \
         PRIMARY KEY (hash))')
     conn.commit()
     conn.close()
