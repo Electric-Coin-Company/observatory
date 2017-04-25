@@ -10,11 +10,27 @@ db_file = 'blocks.sqlite'
 app = Flask(__name__)
 app.config.from_object(config.FlaskConfig)
 
+def latest_block():
+    conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT MAX(height) FROM blocks')
+    total_height = c.fetchone()
+    return int(total_height[0])
+
 def find_block_by_tx(txid):
     conn = sqlite3.connect(db_file)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT hash FROM tx WHERE tx=:txid', {"txid": txid})
+    block_hash = c.fetchone()
+    return str(block_hash['hash'])
+
+def find_block_by_height(block_height):
+    conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT hash FROM blocks WHERE height=:height', {"height": block_height})
     block_hash = c.fetchone()
     return str(block_hash['hash'])
 
@@ -57,6 +73,9 @@ def get_txs(block_hash):
     return txs
 
 def validate_input(search_string):
+    if search_string.isdigit():
+        if int(search_string) <= latest_block():
+            return search_string
     if len(search_string) != 64:
         return None
     m = re.match(r"[A-Fa-f0-9]{64}", search_string)
@@ -88,13 +107,22 @@ def show_block():
     if search_string is None:
         print 'blockhash search none'
         return ('', 204)
+    # find block by hash
     try:
         block = get_single_block(search_string)
         return render_template('block.html', block = block)
     except:
         pass
+    # find block by transaction ID
     try:
         block_hash = find_block_by_tx(search_string)
+        block = get_single_block(block_hash)
+        return render_template('block.html', block = block)
+    except:
+        pass
+    # find block by height
+    try:
+        block_hash = find_block_by_height(search_string)
         block = get_single_block(block_hash)
         return render_template('block.html', block = block)
     except:
@@ -102,6 +130,6 @@ def show_block():
         return ('', 204)
 
 if __name__ == '__main__':
-    cache = SimpleCache()
-    cache.set('blocks', get_blocks(), timeout=3600)
+    # cache = SimpleCache()
+    # cache.set('blocks', get_blocks(), timeout=3600)
     app.run(host='0.0.0.0', port=int('8201'), debug=True)
