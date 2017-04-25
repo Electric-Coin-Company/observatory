@@ -33,3 +33,15 @@ nav {
   padding-right: 15px;
   padding-left: 15px;
 }
+
+#recentBlocks img {
+  height: 14px;
+  padding-left: 5px;
+}
+
+a.paginate_button {
+  padding: 5px;
+}
+#recentBlocks_paginate.dataTables_paginate {
+  padding-top:1em;
+}
