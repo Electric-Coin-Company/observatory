@@ -63,7 +63,7 @@
       </tr>
       <tr>
         <th>nextblockhash</th>
-        {% if 'None' in nextblockhash %}
+        {% if str(nextblockhash) == 'None' %}
         <td>None</td>
         {% else %}
         <td><a href="/block?search={{ block['nextblockhash'] }}" style="text-decoration: none;">{{ block['nextblockhash'] }}</a></td>
