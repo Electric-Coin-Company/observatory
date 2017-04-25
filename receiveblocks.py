@@ -35,6 +35,7 @@ def createdb():
         nextblockhash TEXT(100), \
         arrivaltime REAL, \
         PRIMARY KEY (hash))')
+    conn.execute('VACUUM')
     conn.commit()
     conn.close()
 
