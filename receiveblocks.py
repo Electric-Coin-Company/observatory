@@ -54,10 +54,18 @@ def storeblock(block):
             pass
     except sqlite3.Error as err:
         print('ERROR:', err.message)
-        if block['nextblockhash'] is not None:
+        if err.message == 'UNIQUE constrant failed: blocks.hash':
+            if block['nextblockhash'] is not None:
+                try:
+                    c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
+                        {"nextblockhash": block['nextblockhash'], "hash": block['hash']})
+                    print 'Updated nextblockhash on block ' + block['height']
+                except:
+                    pass
             try:
-                c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
-                    {"nextblockhash": block['nextblockhash'], "hash": block['hash']})
+                c.execute('UPDATE blocks SET confirmations=:confirmations WHERE hash=:hash',
+                    {"confirmations": block['confirmations'], "hash": block['hash']})
+                print 'Updated confirmations on block ' + block['height']
             except:
                 pass
     for tx in block['tx']:
