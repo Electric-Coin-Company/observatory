@@ -48,8 +48,18 @@ def storeblock(block):
             block['size'], block['height'], block['version'], block['merkleroot'], block['time'], \
             block['nonce'], block['bits'], block['difficulty'], block['chainwork'], block['anchor'], \
             block.get('previousblockhash', None), block.get('nextblockhash', None), block.get('arrivaltime', None)))
+        try:
+            c.execute('UPDATE blocks SET nextblockhash = (?) WHERE hash = (?)', (block['hash'], block['previousblockhash']))
+        except:
+            pass
     except sqlite3.Error as err:
         print('ERROR:', err.message)
+        if block['nextblockhash'] is not None:
+            try:
+                c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
+                    {"nextblockhash": block['nextblockhash'], "hash": block['hash']})
+            except:
+                pass
     for tx in block['tx']:
         try:
             c.execute('INSERT INTO tx (hash, tx) VALUES (?, ?)', (block['hash'], tx))
