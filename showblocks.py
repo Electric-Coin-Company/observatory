@@ -13,13 +13,24 @@ import config
 app = Flask(__name__)
 app.config.from_object(config.ShowBlocksConfig)
 
-def latest_block():
+def stats(count=False, txs=False, height=False, diff=False):
     conn = sqlite3.connect(app.config['DB_FILE'])
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute('SELECT MAX(height) FROM blocks')
-    total_height = c.fetchone()
-    return int(total_height[0])
+    stats = {}
+    if count:
+        c.execute('SELECT COUNT(*) FROM blocks')
+        stats['count'] = c.fetchone()[0]
+    if txs:
+        c.execute('SELECT COUNT(*) FROM tx')
+        stats['txs'] = c.fetchone()[0]
+    if height:
+        c.execute('SELECT MAX(height) FROM blocks')
+        stats['height'] = c.fetchone()[0]
+    if diff:
+        c.execute('SELECT (MAX(height) - COUNT(*)) FROM blocks')
+        stats['diff'] = c.fetchone()[0]
+    return stats
 
 def find_block_by_tx(txid):
     conn = sqlite3.connect(app.config['DB_FILE'])
@@ -44,7 +55,8 @@ def get_single_block(block_hash):
     c.execute('SELECT * FROM blocks WHERE hash=:hash', {"hash": block_hash})
     block = c.fetchone()
     transactions = ast.literal_eval(block['tx'])
-    return dict(block), list(transactions)
+    confirmations = (stats('count') - block['height']) + 1
+    return dict(block), list(transactions), int(confirmations)
 
 def get_blocks():
     conn = sqlite3.connect(app.config['DB_FILE'])
@@ -92,8 +104,8 @@ def show_block():
         return ('', 204)
     # find block by hash
     try:
-        block, transactions = get_single_block(search_string)
-        return render_template('block.html', block=block, transactions=transactions)
+        block, transactions, confirmations = get_single_block(search_string)
+        return render_template('block.html', block=block, transactions=transactions, confirmations=confirmations)
     except Exception as e:
         print(e)
         print('Error: Failed to locate block by hash.')
@@ -101,8 +113,8 @@ def show_block():
     # find block by transaction ID
     try:
         block_hash = find_block_by_tx(search_string)
-        block, transactions = get_single_block(block_hash)
-        return render_template('block.html', block=block, transactions=transactions)
+        block, transactions, confirmations = get_single_block(block_hash)
+        return render_template('block.html', block=block, transactions=transactions, confirmations=confirmations)
     except Exception as e:
         print(e)
         print('Error: Failed to locate block by txid.')
@@ -110,12 +122,18 @@ def show_block():
     # find block by height
     try:
         block_hash = find_block_by_height(search_string)
-        block, transactions = get_single_block(block_hash)
-        return render_template('block.html', block=block, transactions=transactions)
+        block, transactions, confirmations = get_single_block(block_hash)
+        return render_template('block.html', block=block, transactions=transactions, confirmations=confirmations)
     except Exception as e:
         print(e)
         print('Error: Failed to locate block by height.')
         return ('', 204)
 
-if __name__ == '__main__':
+def main():
+    census = stats(count=True, txs=False, height=True, diff=True)
+    print (str(census['count']) + ' blocks available for search.')
+    print (str(census['diff']) + ' blocks missing from the database.')
     app.run(host='0.0.0.0', port=int(app.config['BIND_PORT']), debug=app.config['DEBUG'])
+
+if __name__ == '__main__':
+    main()
