@@ -59,7 +59,7 @@ def storeblock(block):
         except:
             pass
     except sqlite3.Error as err:
-        print('ERROR:', err.message)
+        print('ERROR:', err)
         if block['nextblockhash'] is not None:
             try:
                 c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
@@ -77,7 +77,7 @@ def storeblock(block):
         try:
             c.execute('INSERT INTO tx (hash, tx) VALUES (?, ?)', (block['hash'], tx))
         except sqlite3.Error as err:
-            print('ERROR:', err.message)
+            print('ERROR:', err)
     conn.commit()
     conn.close()
 
