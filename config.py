@@ -27,7 +27,7 @@ class LoadBlocksConfig(dict):
     BLOCK_OBSERVATORY_URL = 'http://127.0.0.1:8200/'
     ZCASH_CLI_PATH = '/usr/bin/zcash-cli'
     START_BLOCK_HEIGHT = 0
-    END_BLOCK_HEIGHT = 108560
+    END_BLOCK_HEIGHT = 109231
 
 class ZcashConfig(dict):
     ZCASH_CLI_PATH = '/usr/bin/zcash-cli'
