@@ -13,6 +13,7 @@ import requests
 from config import LoadBlocksConfig
 config = LoadBlocksConfig
 
+
 def parse_cmd_args():
     description = """
 Allows one to specify the block range to import via START_BLOCK_HEIGHT and END_BLOCK_HEIGHT
@@ -29,6 +30,7 @@ or...
     parser.add_argument('--end', type=int, default=os.environ.get('END_BLOCK_HEIGHT', zcash('getblockcount')), required=False, help="Block number to stop importing at")
     return parser.parse_args()
 
+
 def zcashd_access_test(proc):
     current_user = str(getpass.getuser())
     try:
@@ -41,6 +43,7 @@ def zcashd_access_test(proc):
         print('Error: This zcashd does not seem to be running as the user of this script.')
         return False
 
+
 def is_zcashd_running():
     zcashd_procs = filter(lambda p: p.name() == "zcashd", psutil.process_iter())
     if zcashd_procs is not [] and len(zcashd_procs) >= 1:
@@ -50,8 +53,9 @@ def is_zcashd_running():
             while zcashd_access_test(proc):
                 return True
     else:
-        print('Error: Could not find an accessible running iinstance of zcashd on this system.')
+        print('Error: Could not find an accessible running instance of zcashd on this system.')
         return False
+
 
 def zcash(cmd):
     zcexec = subprocess.Popen([config.ZCASH_CLI_PATH, cmd], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -64,6 +68,7 @@ def zcash(cmd):
         return False
     return json.loads(output)
 
+
 def get_block(block_height):
     zcexec = subprocess.Popen([config.ZCASH_CLI_PATH, 'getblock', block_height], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     output = zcexec.communicate()[0]
@@ -74,6 +79,7 @@ def get_block(block_height):
         print('Error: Can\'t retrieve block number ' + block_height + ' from zcashd.')
         return False
     return json.loads(output)
+
 
 def main():
     if not is_zcashd_running():
@@ -93,7 +99,7 @@ def main():
         session = requests.session()
         session.headers.update({'Content-Type': 'application/json'})
         for x in range(start_point if (start_point > 0) else start_point,
-            end_point if (end_point < num_blocks) else end_point):
+                       end_point if (end_point < num_blocks) else end_point):
                 block = get_block(str(x))
                 r = session.post(config.BLOCK_OBSERVATORY_URL, json=block)
                 r.raise_for_status()
@@ -102,6 +108,7 @@ def main():
         print('Error: Can\'t retrieve blocks from zcashd.')
         sys.exit(1)
     sys.exit(0)
+
 
 if __name__ == '__main__':
     main()
