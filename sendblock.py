@@ -17,7 +17,7 @@ def zcash(block_hash):
     zcexec = subprocess.Popen([config.ZCASH_CLI_PATH, 'getblock', block_hash],
                               stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     output = zcexec.communicate()[0]
-    return json.loads(output)
+    return json.loads(output, encoding='utf-8')
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     block = zcash(block_hash)
     block['arrivaltime'] = timestamp
     session = requests.session()
-    session.headers.update({'Content-Type': 'application/json'})
+    session.headers.update({'Content-Type': 'application/json; charset=UTF-8'})
     r = session.post(config['BLOCK_OBSERVATORY_URL'], json=block)
     r.raise_for_status()
     sys.exit(0)
