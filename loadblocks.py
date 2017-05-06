@@ -26,8 +26,10 @@ or...
 """
     parser = argparse.ArgumentParser(description=description,
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('--start', type=int, default=os.environ.get('START_BLOCK_HEIGHT', 1), required=False, help="Block number to begin import from")
-    parser.add_argument('--end', type=int, default=os.environ.get('END_BLOCK_HEIGHT', zcash('getblockcount')), required=False, help="Block number to stop importing at")
+    parser.add_argument('--start', type=int, default=os.environ.get('START_BLOCK_HEIGHT', config.START_BLOCK_HEIGHT),
+                        required=False, help="Block number to begin import from")
+    parser.add_argument('--end', type=int, default=os.environ.get('END_BLOCK_HEIGHT', config.END_BLOCK_HEIGHT),
+                        required=False, help="Block number to stop importing at")
     return parser.parse_args()
 
 
@@ -35,7 +37,7 @@ def zcashd_access_test(proc):
     current_user = str(getpass.getuser())
     try:
         os.kill(proc['pid'], 0)
-        if proc['username'] == current_user:
+        if proc['username'] == current_user and isinstance(zcash('getblockcount'), int):
             print('Success: found zcashd is running as ' + current_user + ' allowing RPC interface access.')
             return True
     except Exception as e:
@@ -47,7 +49,7 @@ def zcashd_access_test(proc):
 def is_zcashd_running():
     if sys.version_info[0] == 2:
         zcashd_procs = filter(lambda p: p.name() == "zcashd", psutil.process_iter())
-    if sys.version_info[0] == 3:
+    elif sys.version_info[0] == 3:
         zcashd_procs = [p for p in psutil.process_iter() if p.name() == "zcashd"]
     if zcashd_procs is not [] and len(zcashd_procs) >= 1:
         procs = [proc.as_dict(attrs=['pid', 'username']) for proc in zcashd_procs]
@@ -64,24 +66,24 @@ def zcash(cmd):
     zcexec = subprocess.Popen([config.ZCASH_CLI_PATH, cmd], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     output = zcexec.communicate()[0]
     try:
-        json.loads(output)
+        result = json.loads(output, encoding='utf-8')
     except Exception as e:
         print(e)
-        print('Error: Can\'t communicate with Zcash RPC Interface.')
+        print('Error: Can\'t communicate with or parse JSON from Zcash RPC Interface.')
         return False
-    return json.loads(output)
+    return result
 
 
 def get_block(block_height):
     zcexec = subprocess.Popen([config.ZCASH_CLI_PATH, 'getblock', block_height], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     output = zcexec.communicate()[0]
     try:
-        json.loads(output)
+        block = json.loads(output, encoding='utf-8')
     except Exception as e:
         print(e)
         print('Error: Can\'t retrieve block number ' + block_height + ' from zcashd.')
         return False
-    return json.loads(output)
+    return block
 
 
 def main():
@@ -90,17 +92,13 @@ def main():
 
     args = parse_cmd_args()
 
-    if args.start and args.end:
-        start_point = args.start
-        end_point = args.end
-    else:
-        start_point = config.START_BLOCK_HEIGHT
-        end_point = config.END_BLOCK_HEIGHT
-
+    start_point = args.start
+    end_point = args.end
     num_blocks = zcash('getinfo')['blocks'] if zcash('getinfo') is not False else None
+
     if num_blocks is not None:
         session = requests.session()
-        session.headers.update({'Content-Type': 'application/json'})
+        session.headers.update({'Content-Type': 'application/json; charset=UTF-8'})
         for x in range(start_point if (start_point > 0) else start_point,
                        end_point if (end_point < num_blocks) else end_point):
             block = get_block(str(x))
