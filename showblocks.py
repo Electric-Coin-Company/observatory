@@ -9,6 +9,9 @@ import sqlite3
 import time
 from flask import Flask, render_template, request
 
+from werkzeug.contrib.cache import SimpleCache
+cache = SimpleCache()
+
 import config
 app = Flask(__name__)
 app.config.from_object(config.ShowBlocksConfig)
@@ -82,12 +85,12 @@ def get_single_block(block_hash):
     return dict(block), list(transactions), int(confirmations)
 
 
-def get_blocks():
+def get_blocks(num_blocks=-1):
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
     optimize_db(conn)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute('SELECT hash, height, size, txs, time FROM blocks ORDER by height DESC LIMIT 200')
+    c.execute('SELECT hash, height, size, txs, time FROM blocks ORDER by height DESC LIMIT ' + (str(num_blocks) if (int(num_blocks) > 0) else str('-1')))
     # return retrieved blocks as a dict
     blocks = [dict(block) for block in c.fetchall()]
     conn.close()
@@ -117,7 +120,7 @@ def _jinja2_filter_timestamp(unix_epoch):
 @app.route('/')
 def index():
     try:
-        blocks = get_blocks()
+        blocks = cache.get('blocks')
     except Exception as e:
         print('Error retreving blocks from the local database.')
         print(e)
@@ -161,9 +164,12 @@ def show_block():
 
 
 def main():
-    census = stats(count=True, txs=False, height=True, diff=True)
-    print (str(census['count']) + ' blocks available for search.')
-    print (str(census['diff']) + ' blocks missing from the database.')
+    census = stats(count=True, txs=True, height=True, diff=True)
+    print(str(census['txs']) + ' transactions are indexed.')
+    print('Block ' + str(census['height']) + ' is the most recent one.')
+    print(str(census['count']) + ' blocks available for search.')
+    print(str(census['diff']) + ' blocks seem missing from the database.')
+    cache.set('blocks', get_blocks(app.config('BLOCKS_CACHE_SIZE')), timeout=app.config('BLOCKS_CACHE_TIMEOUT'))
     app.run(host='0.0.0.0', port=int(app.config['BIND_PORT']), debug=app.config['DEBUG'])
 
 

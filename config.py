@@ -13,6 +13,8 @@ class ShowBlocksConfig(object):
     TEMPLATE_DEBUG = True
     TEMPLATES_AUTO_RELOAD = True
     SECRET_KEY = 'lQT0EE/XcyZrXDjCCJ/KRs3F2zKc0Ls3KAmT4y0pxp4='
+    BLOCKS_CACHE_SIZE = 500
+    BLOCKS_CACHE_TIMEOUT = 300
 
 
 
