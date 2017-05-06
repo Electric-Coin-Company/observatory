@@ -94,7 +94,7 @@ def main():
 
     start_point = args.start
     end_point = args.end
-    num_blocks = zcash('getinfo')['blocks'] if zcash('getinfo') is not False else None
+    num_blocks = zcash('getblockcount') if isinstance(zcash('getblockcount'), int) else None
 
     if num_blocks is not None:
         session = requests.session()
