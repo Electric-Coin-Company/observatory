@@ -14,9 +14,19 @@ import config
 app = Flask(__name__)
 app.config.from_object(config.ReceiveBlocksConfig)
 
+def optimize_db(conn):
+    c = conn.cursor()
+    c.execute('PRAGMA journal_mode = WAL')
+    c.execute('PRAGMA page_size = 8096')
+    c.execute('PRAGMA temp_store = 2')
+    c.execute('PRAGMA synchronous = 0')
+    c.execute('PRAGMA cache_size = 8192000')
+    conn.commit()
+    return
 
 def createdb():
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     c = conn.cursor()
 
     c.execute('CREATE TABLE IF NOT EXISTS tx( \
@@ -51,6 +61,7 @@ def createdb():
 
 def find_gaps():
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT (t1.height + 1) AS start, \
@@ -86,6 +97,7 @@ def fill_gaps(gaps):
 
 def storeblock(block):
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     c = conn.cursor()
     try:
         c.execute('INSERT INTO blocks (hash, confirmations, size, height, version, merkleroot, tx, txs, \
@@ -125,6 +137,7 @@ def storeblock(block):
             pass
     conn.commit()
     conn.close()
+    return
 
 
 @app.route('/', methods=['POST'])

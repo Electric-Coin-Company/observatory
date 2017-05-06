@@ -13,8 +13,19 @@ import config
 app = Flask(__name__)
 app.config.from_object(config.ShowBlocksConfig)
 
+def optimize_db(conn):
+    c = conn.cursor()
+    c.execute('PRAGMA journal_mode = WAL')
+    c.execute('PRAGMA page_size = 8096')
+    c.execute('PRAGMA temp_store = 2')
+    c.execute('PRAGMA synchronous = 0')
+    c.execute('PRAGMA cache_size = 8192000')
+    conn.commit()
+    return
+
 def stats(count=False, txs=False, height=False, diff=False):
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     summary = {}
@@ -34,7 +45,8 @@ def stats(count=False, txs=False, height=False, diff=False):
     return stats
 
 def find_block_by_tx(txid):
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT hash FROM tx WHERE tx=:txid', {"txid": txid})
@@ -43,7 +55,8 @@ def find_block_by_tx(txid):
     return str(block_hash['hash'])
 
 def find_block_by_height(block_height):
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT hash FROM blocks WHERE height=:height', {"height": block_height})
@@ -52,7 +65,8 @@ def find_block_by_height(block_height):
     return str(block_hash['hash'])
 
 def get_single_block(block_hash):
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT * FROM blocks WHERE hash=:hash', {"hash": block_hash})
@@ -63,7 +77,8 @@ def get_single_block(block_hash):
     return dict(block), list(transactions), int(confirmations)
 
 def get_blocks():
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
+    optimize_db(conn)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT hash, height, size, txs, time FROM blocks ORDER by height DESC LIMIT 200')
