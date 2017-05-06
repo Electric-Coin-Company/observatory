@@ -44,7 +44,7 @@ def stats(count=False, txs=False, height=False, diff=False):
         c.execute('SELECT (MAX(height) - COUNT(*)) FROM blocks')
         summary['diff'] = c.fetchone()[0]
     conn.close()
-    return stats
+    return summary
 
 
 def find_block_by_tx(txid):
