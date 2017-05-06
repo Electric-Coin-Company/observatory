@@ -132,9 +132,12 @@ def index():
 
 @app.before_first_request
 def fix_missing_blocks():
-    while len(find_gaps()) > 0:
-        fill_gaps(find_gaps())
-        time.sleep(10)
+    if app.config['LOAD_MISSING_BLOCKS']:
+        while len(find_gaps()) > 0:
+            fill_gaps(find_gaps())
+            time.sleep(10)
+    return
+
 
 def main():
     createdb()

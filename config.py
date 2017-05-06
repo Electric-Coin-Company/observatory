@@ -18,6 +18,7 @@ class ReceiveBlocksConfig(object):
     DB_FILE = 'blocks.sqlite'
     DEBUG = True
     TESTING = True
+    LOAD_MISSING_BLOCKS = False
 
 class SendBlocksConfig(dict):
     BLOCK_OBSERVATORY_URL = 'http://127.0.0.1:8200/'
