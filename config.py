@@ -5,7 +5,6 @@ This is a configuration file for the Zcash block observatory.
 """
 
 class ShowBlocksConfig(object):
-    BLOCK_OBSERVATORY_URL = 'http://127.0.0.1:8200/'
     BIND_PORT = 8201
     DB_FILE = 'blocks.sqlite'
     DEBUG = True
@@ -29,3 +28,6 @@ class LoadBlocksConfig(dict):
     ZCASH_CLI_PATH = '/usr/bin/zcash-cli'
     START_BLOCK_HEIGHT = 0
     END_BLOCK_HEIGHT = 108560
+
+class ZcashConfig(dict):
+    ZCASH_CLI_PATH = '/usr/bin/zcash-cli'
