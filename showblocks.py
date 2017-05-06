@@ -55,7 +55,7 @@ def get_single_block(block_hash):
     c.execute('SELECT * FROM blocks WHERE hash=:hash', {"hash": block_hash})
     block = c.fetchone()
     transactions = ast.literal_eval(block['tx'])
-    confirmations = (stats('count') - block['height']) + 1
+    confirmations = (stats(height=True)['height'] - block['height']) + 1
     return dict(block), list(transactions), int(confirmations)
 
 def get_blocks():
@@ -69,7 +69,7 @@ def get_blocks():
 
 def validate_input(search_string):
     if search_string.isdigit():
-        if int(search_string) <= latest_block():
+        if int(search_string) <= stats(height=True)['height']:
             print('Search is numeric but not less than the current block height.')
             return search_string
     if len(search_string) != 64:
