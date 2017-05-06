@@ -14,6 +14,7 @@ import config
 app = Flask(__name__)
 app.config.from_object(config.ReceiveBlocksConfig)
 
+
 def optimize_db(conn):
     c = conn.cursor()
     c.execute('PRAGMA journal_mode = WAL')
@@ -23,6 +24,7 @@ def optimize_db(conn):
     c.execute('PRAGMA cache_size = 8192000')
     conn.commit()
     return
+
 
 def createdb():
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
@@ -101,39 +103,39 @@ def storeblock(block):
     c = conn.cursor()
     try:
         c.execute('INSERT INTO blocks (hash, confirmations, size, height, version, merkleroot, tx, txs, \
-            time, nonce, bits, difficulty, chainwork, anchor, previousblockhash, nextblockhash, arrivaltime) \
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            (block['hash'], block['confirmations'], block['size'], block['height'], block['version'],
-            block['merkleroot'], json.dumps(block['tx']), len(block['tx']), block['time'], block['nonce'],
-            block['bits'], block['difficulty'], block['chainwork'], block['anchor'], block.get('previousblockhash', None),
-            block.get('nextblockhash', None), block.get('arrivaltime', None)))
+                  time, nonce, bits, difficulty, chainwork, anchor, previousblockhash, nextblockhash, arrivaltime) \
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                  (block['hash'], block['confirmations'], block['size'], block['height'], block['version'],
+                   block['merkleroot'], json.dumps(block['tx']), len(block['tx']), block['time'], block['nonce'],
+                   block['bits'], block['difficulty'], block['chainwork'], block['anchor'], block.get('previousblockhash', None),
+                   block.get('nextblockhash', None), block.get('arrivaltime', None)))
         try:
             c.execute('UPDATE blocks SET nextblockhash = (?) WHERE hash = (?)', (block['hash'], block['previousblockhash']))
         except sqlite3.Error as err:
-            print('ERROR:, err)
+            print(err)
             pass
     except sqlite3.Error as err:
-        print('ERROR:', err)
+        print(err)
         if block['nextblockhash'] is not None:
             try:
                 c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
                           {"nextblockhash": block['nextblockhash'], "hash": block['hash']})
                 print('Updated nextblockhash on block ' + block['height'])
             except sqlite3.Error as err:
-                print('ERROR:', err)
+                print(err)
                 pass
         try:
             c.execute('UPDATE blocks SET confirmations=:confirmations WHERE hash=:hash',
                       {"confirmations": block['confirmations'], "hash": block['hash']})
             print('Updated confirmations on block ' + block['height'])
         except sqlite3.Error as err:
-            print('ERROR:', err)
+            print(err)
             pass
     for tx in block['tx']:
         try:
             c.execute('INSERT INTO tx (hash, tx) VALUES (?, ?)', (block['hash'], tx))
         except sqlite3.Error as err:
-            print('ERROR:', err)
+            print(err)
             pass
     conn.commit()
     conn.close()

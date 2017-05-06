@@ -13,6 +13,7 @@ import config
 app = Flask(__name__)
 app.config.from_object(config.ShowBlocksConfig)
 
+
 def optimize_db(conn):
     c = conn.cursor()
     c.execute('PRAGMA journal_mode = WAL')
@@ -22,6 +23,7 @@ def optimize_db(conn):
     c.execute('PRAGMA cache_size = 8192000')
     conn.commit()
     return
+
 
 def stats(count=False, txs=False, height=False, diff=False):
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
@@ -44,6 +46,7 @@ def stats(count=False, txs=False, height=False, diff=False):
     conn.close()
     return stats
 
+
 def find_block_by_tx(txid):
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
     optimize_db(conn)
@@ -54,6 +57,7 @@ def find_block_by_tx(txid):
     conn.close()
     return str(block_hash['hash'])
 
+
 def find_block_by_height(block_height):
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
     optimize_db(conn)
@@ -63,6 +67,7 @@ def find_block_by_height(block_height):
     block_hash = c.fetchone()
     conn.close()
     return str(block_hash['hash'])
+
 
 def get_single_block(block_hash):
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
@@ -76,6 +81,7 @@ def get_single_block(block_hash):
     confirmations = (stats('count') - block['height']) + 1
     return dict(block), list(transactions), int(confirmations)
 
+
 def get_blocks():
     conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
     optimize_db(conn)
@@ -86,6 +92,7 @@ def get_blocks():
     blocks = [dict(block) for block in c.fetchall()]
     conn.close()
     return blocks
+
 
 def validate_input(search_string):
     if search_string.isdigit():
@@ -101,9 +108,11 @@ def validate_input(search_string):
         return search_string
     return None
 
+
 @app.template_filter('timestamp')
 def _jinja2_filter_timestamp(unix_epoch):
     return time.ctime(unix_epoch)
+
 
 @app.route('/')
 def index():
@@ -114,6 +123,7 @@ def index():
         print(e)
         pass
     return render_template('blocks.html', blocks=blocks)
+
 
 @app.route('/block', methods=['GET', 'POST'])
 def show_block():
@@ -149,11 +159,13 @@ def show_block():
         print('Error: Failed to locate block by height.')
         return ('', 204)
 
+
 def main():
     census = stats(count=True, txs=False, height=True, diff=True)
     print (str(census['count']) + ' blocks available for search.')
     print (str(census['diff']) + ' blocks missing from the database.')
     app.run(host='0.0.0.0', port=int(app.config['BIND_PORT']), debug=app.config['DEBUG'])
+
 
 if __name__ == '__main__':
     main()
