@@ -13,9 +13,8 @@ import config
 app = Flask(__name__)
 app.config.from_object(config.ShowBlocksConfig)
 
-
 def stats(count=False, txs=False, height=False, diff=False):
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     summary = {}
@@ -31,8 +30,8 @@ def stats(count=False, txs=False, height=False, diff=False):
     if diff:
         c.execute('SELECT (MAX(height) - COUNT(*)) FROM blocks')
         summary['diff'] = c.fetchone()[0]
-    return summary
-
+    conn.close()
+    return stats
 
 def find_block_by_tx(txid):
     conn = sqlite3.connect(app.config['DB_FILE'])
@@ -40,8 +39,8 @@ def find_block_by_tx(txid):
     c = conn.cursor()
     c.execute('SELECT hash FROM tx WHERE tx=:txid', {"txid": txid})
     block_hash = c.fetchone()
+    conn.close()
     return str(block_hash['hash'])
-
 
 def find_block_by_height(block_height):
     conn = sqlite3.connect(app.config['DB_FILE'])
@@ -49,8 +48,8 @@ def find_block_by_height(block_height):
     c = conn.cursor()
     c.execute('SELECT hash FROM blocks WHERE height=:height', {"height": block_height})
     block_hash = c.fetchone()
+    conn.close()
     return str(block_hash['hash'])
-
 
 def get_single_block(block_hash):
     conn = sqlite3.connect(app.config['DB_FILE'])
@@ -58,10 +57,10 @@ def get_single_block(block_hash):
     c = conn.cursor()
     c.execute('SELECT * FROM blocks WHERE hash=:hash', {"hash": block_hash})
     block = c.fetchone()
+    conn.close()
     transactions = ast.literal_eval(block['tx'])
-    confirmations = (stats(height=True)['height'] - block['height']) + 1
+    confirmations = (stats('count') - block['height']) + 1
     return dict(block), list(transactions), int(confirmations)
-
 
 def get_blocks():
     conn = sqlite3.connect(app.config['DB_FILE'])
@@ -70,12 +69,12 @@ def get_blocks():
     c.execute('SELECT hash, height, size, txs, time FROM blocks ORDER by height DESC LIMIT 200')
     # return retrieved blocks as a dict
     blocks = [dict(block) for block in c.fetchall()]
+    conn.close()
     return blocks
-
 
 def validate_input(search_string):
     if search_string.isdigit():
-        if int(search_string) <= stats(height=True)['height']:
+        if int(search_string) <= stats['height']:
             print('Search is numeric but not less than the current block height.')
             return search_string
     if len(search_string) != 64:
@@ -87,11 +86,9 @@ def validate_input(search_string):
         return search_string
     return None
 
-
 @app.template_filter('timestamp')
 def _jinja2_filter_timestamp(unix_epoch):
     return time.ctime(unix_epoch)
-
 
 @app.route('/')
 def index():
@@ -102,7 +99,6 @@ def index():
         print(e)
         pass
     return render_template('blocks.html', blocks=blocks)
-
 
 @app.route('/block', methods=['GET', 'POST'])
 def show_block():
@@ -138,13 +134,11 @@ def show_block():
         print('Error: Failed to locate block by height.')
         return ('', 204)
 
-
 def main():
     census = stats(count=True, txs=False, height=True, diff=True)
-    print(str(census['count']) + ' blocks available for search.')
-    print(str(census['diff']) + ' blocks missing from the database.')
+    print (str(census['count']) + ' blocks available for search.')
+    print (str(census['diff']) + ' blocks missing from the database.')
     app.run(host='0.0.0.0', port=int(app.config['BIND_PORT']), debug=app.config['DEBUG'])
-
 
 if __name__ == '__main__':
     main()

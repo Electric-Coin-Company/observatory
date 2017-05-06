@@ -50,7 +50,7 @@ def createdb():
 
 
 def find_gaps():
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT (t1.height + 1) AS start, \
@@ -60,6 +60,7 @@ def find_gaps():
         GROUP BY height HAVING end IS NOT NULL \
         ORDER BY end DESC')
     gaps = [dict(gap) for gap in c.fetchall()]
+    conn.close()
     if gaps == []:
         return None
     else:
@@ -84,7 +85,7 @@ def fill_gaps(gaps):
 
 
 def storeblock(block):
-    conn = sqlite3.connect(app.config['DB_FILE'])
+    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
     c = conn.cursor()
     try:
         c.execute('INSERT INTO blocks (hash, confirmations, size, height, version, merkleroot, tx, txs, \
@@ -96,7 +97,8 @@ def storeblock(block):
             block.get('nextblockhash', None), block.get('arrivaltime', None)))
         try:
             c.execute('UPDATE blocks SET nextblockhash = (?) WHERE hash = (?)', (block['hash'], block['previousblockhash']))
-        except:
+        except sqlite3.Error as err:
+            print('ERROR:, err)
             pass
     except sqlite3.Error as err:
         print('ERROR:', err)
@@ -105,19 +107,22 @@ def storeblock(block):
                 c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
                           {"nextblockhash": block['nextblockhash'], "hash": block['hash']})
                 print('Updated nextblockhash on block ' + block['height'])
-            except:
+            except sqlite3.Error as err:
+                print('ERROR:', err)
                 pass
         try:
             c.execute('UPDATE blocks SET confirmations=:confirmations WHERE hash=:hash',
                       {"confirmations": block['confirmations'], "hash": block['hash']})
             print('Updated confirmations on block ' + block['height'])
-        except:
+        except sqlite3.Error as err:
+            print('ERROR:', err)
             pass
     for tx in block['tx']:
         try:
             c.execute('INSERT INTO tx (hash, tx) VALUES (?, ?)', (block['hash'], tx))
         except sqlite3.Error as err:
             print('ERROR:', err)
+            pass
     conn.commit()
     conn.close()
 
