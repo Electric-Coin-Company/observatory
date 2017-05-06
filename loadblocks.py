@@ -45,7 +45,10 @@ def zcashd_access_test(proc):
 
 
 def is_zcashd_running():
-    zcashd_procs = filter(lambda p: p.name() == "zcashd", psutil.process_iter())
+    if sys.version_info[0] == 2:
+        zcashd_procs = filter(lambda p: p.name() == "zcashd", psutil.process_iter())
+    if sys.version_info[0] == 3:
+        zcashd_procs = [p for p in psutil.process_iter() if p.name() == "zcashd"]
     if zcashd_procs is not [] and len(zcashd_procs) >= 1:
         procs = [proc.as_dict(attrs=['pid', 'username']) for proc in zcashd_procs]
         for proc in procs:
