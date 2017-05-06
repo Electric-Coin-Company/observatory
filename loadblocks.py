@@ -5,9 +5,9 @@ import argparse
 import json
 import getpass
 import os
-import psutil
 import subprocess
 import sys
+import psutil
 import requests
 
 from config import LoadBlocksConfig
@@ -26,7 +26,7 @@ or...
 """
     parser = argparse.ArgumentParser(description=description,
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('--start', type=int, default=os.environ.get('START_BLOCK_HEIGHT', 0), required=False, help="Block number to begin import from")
+    parser.add_argument('--start', type=int, default=os.environ.get('START_BLOCK_HEIGHT', 1), required=False, help="Block number to begin import from")
     parser.add_argument('--end', type=int, default=os.environ.get('END_BLOCK_HEIGHT', zcash('getblockcount')), required=False, help="Block number to stop importing at")
     return parser.parse_args()
 
@@ -87,7 +87,7 @@ def main():
 
     args = parse_cmd_args()
 
-    if (args.start and args.end):
+    if args.start and args.end:
         start_point = args.start
         end_point = args.end
     else:
@@ -100,10 +100,10 @@ def main():
         session.headers.update({'Content-Type': 'application/json'})
         for x in range(start_point if (start_point > 0) else start_point,
                        end_point if (end_point < num_blocks) else end_point):
-                block = get_block(str(x))
-                r = session.post(config.BLOCK_OBSERVATORY_URL, json=block)
-                r.raise_for_status()
-                print('Uploaded block ' + str(x) + '.')
+            block = get_block(str(x))
+            r = session.post(config.BLOCK_OBSERVATORY_URL, json=block)
+            r.raise_for_status()
+            print('Uploaded block ' + str(x) + '.')
     else:
         print('Error: Can\'t retrieve blocks from zcashd.')
         sys.exit(1)

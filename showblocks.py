@@ -18,20 +18,20 @@ def stats(count=False, txs=False, height=False, diff=False):
     conn = sqlite3.connect(app.config['DB_FILE'])
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    stats = {}
+    summary = {}
     if count:
         c.execute('SELECT COUNT(*) FROM blocks')
-        stats['count'] = c.fetchone()[0]
+        summary['count'] = c.fetchone()[0]
     if txs:
         c.execute('SELECT COUNT(*) FROM tx')
-        stats['txs'] = c.fetchone()[0]
+        summary['txs'] = c.fetchone()[0]
     if height:
         c.execute('SELECT MAX(height) FROM blocks')
-        stats['height'] = c.fetchone()[0]
+        summary['height'] = c.fetchone()[0]
     if diff:
         c.execute('SELECT (MAX(height) - COUNT(*)) FROM blocks')
-        stats['diff'] = c.fetchone()[0]
-    return stats
+        summary['diff'] = c.fetchone()[0]
+    return summary
 
 
 def find_block_by_tx(txid):
@@ -141,8 +141,8 @@ def show_block():
 
 def main():
     census = stats(count=True, txs=False, height=True, diff=True)
-    print (str(census['count']) + ' blocks available for search.')
-    print (str(census['diff']) + ' blocks missing from the database.')
+    print(str(census['count']) + ' blocks available for search.')
+    print(str(census['diff']) + ' blocks missing from the database.')
     app.run(host='0.0.0.0', port=int(app.config['BIND_PORT']), debug=app.config['DEBUG'])
 
 
