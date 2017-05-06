@@ -98,7 +98,7 @@ def main():
 
     if num_blocks is not None:
         session = requests.session()
-        session.headers.update({'Content-Type': 'application/json; charset=UTF-8'})
+        session.headers.update({'Content-Type': 'application/json'})
         for x in range(start_point if (start_point > 0) else start_point,
                        end_point if (end_point < num_blocks) else end_point):
             block = get_block(str(x))
