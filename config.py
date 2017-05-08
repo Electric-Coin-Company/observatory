@@ -16,7 +16,7 @@ class ShowBlocksFlaskConfig(object):
 class ShowBlocksConfig(object):
     BIND_PORT = 8201
     DB_FILE = 'file:blocks.sqlite?mode=ro'
-    DB_ARGS = {'timeout': float(10), 'uri': bool(True), 'cached_statements': int(1024)}
+    DB_ARGS = {'timeout': float(10), 'uri': bool(True), 'cached_statements': int(1024), 'check_same_thread': bool(False)}
     BLOCKS_CACHE_SIZE = 500
     BLOCKS_CACHE_TIMEOUT = 300
 
