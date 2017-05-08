@@ -45,7 +45,7 @@ def fill_gaps(gaps):
 
 def main():
     fill_gaps(find_gaps())
-    sys.exit()
+    sys.exit(0)
 
 
 if __name__ == '__main__':

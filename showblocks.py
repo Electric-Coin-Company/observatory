@@ -96,6 +96,13 @@ def get_blocks(num_blocks=-1):
     return blocks
 
 
+def blocks():
+    if cache.get('blocks') is None:
+        cache.set('blocks', get_blocks(config.BLOCKS_CACHE_SIZE), timeout=config.BLOCKS_CACHE_TIMEOUT)
+    else:
+        return cache.get('blocks')
+
+
 def validate_input(search_string):
     if search_string.isdigit():
         if int(search_string) <= stats['height']:
@@ -119,7 +126,7 @@ def _jinja2_filter_timestamp(unix_epoch):
 @app.route('/')
 def index():
     try:
-        blocks = cache.get('blocks')
+        blocks = blocks()
     except Exception as e:
         print('Error retreving blocks from the local database.')
         print(e)
@@ -167,7 +174,6 @@ def main():
     print('Block ' + str(census['height']) + ' is the most recent one.')
     print(str(census['count']) + ' blocks available for search.')
     print(str(census['diff']) + ' blocks seem missing from the database.')
-    cache.set('blocks', get_blocks(config.BLOCKS_CACHE_SIZE), timeout=config.BLOCKS_CACHE_TIMEOUT)
     app.run(host='0.0.0.0', port=int(config.BIND_PORT), debug=app.config['DEBUG'])
 
 
