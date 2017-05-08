@@ -10,12 +10,15 @@ import sys
 import time
 from flask import Flask, request
 from config import ReceiveBlocksFlaskConfig, ReceiveBlocksConfig as config
+
 app = Flask(__name__)
 app.config.from_object(ReceiveBlocksFlaskConfig)
 
+conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
+conn.row_factory = sqlite3.Row
+
 
 def createdb():
-    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     c = conn.cursor()
 
     c.execute('CREATE TABLE IF NOT EXISTS tx( \
@@ -45,12 +48,9 @@ def createdb():
         PRIMARY KEY (hash))')
     conn.execute('VACUUM')
     conn.commit()
-    conn.close()
 
 
 def find_gaps():
-    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
-    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT (t1.height + 1) AS start, \
         (SELECT MIN(t3.height) -1 FROM blocks t3 WHERE t3.height > t1.height) AS end \
@@ -84,7 +84,6 @@ def fill_gaps(gaps):
 
 
 def storeblock(block):
-    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     c = conn.cursor()
     try:
         c.execute('INSERT INTO blocks (hash, confirmations, size, height, version, merkleroot, tx, txs, \
@@ -123,7 +122,6 @@ def storeblock(block):
             print(err)
             pass
     conn.commit()
-    conn.close()
     return
 
 
