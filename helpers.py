@@ -73,6 +73,15 @@ def optimizedb(conn):
 
 
 def zcash(cmd):
-    zcash = subprocess.Popen(['/usr/bin/zcash-cli', cmd], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    zcash = subprocess.Popen([config.ZCASH_CLI_PATH, cmd], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     output = zcash.communicate()[0]
     return output
+
+def get_raw_tx(txid):
+    try:
+        output = subprocess.check_output(['/usr/bin/zcash-cli', 'getrawtransaction', txid])
+    except Exception as e:
+        print(e)
+        print('Error: Can\'t retrieve raw transaction ' + txid + ' from zcashd.')
+        return None
+    return output.decode('utf-8')

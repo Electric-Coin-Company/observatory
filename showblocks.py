@@ -9,10 +9,10 @@ import re
 import sqlite3
 import time
 import sys
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 from werkzeug.contrib.cache import SimpleCache
 from config import ShowBlocksFlaskConfig, ShowBlocksConfig as config
-from helpers import blockcount
+from helpers import blockcount, get_raw_tx
 from receiveblocks import closedb
 
 app = Flask(__name__)
@@ -109,6 +109,25 @@ def index():
         print(e)
         pass
     return render_template('blocks.html', blocks=blocks)
+
+
+@app.route('/transaction', methods=['GET'])
+def show_rawtx():
+    search_string = validate_input(request.values.get('txid').strip().lower())
+    if search_string is None:
+        print('Error: Search string was invalid.')
+        return ('', 204)
+    # retrieve raw transaction data
+    try:
+        rawtx = get_raw_tx(search_string)
+    except Exception as e:
+        print(e)
+        print('Error: Failed to retrieve raw transaction.')
+        return ('', 204)
+    finally:
+        response = make_response(rawtx)
+        response.headers["content-type"] = "text/plain"
+        return response
 
 
 @app.route('/block', methods=['GET', 'POST'])

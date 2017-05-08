@@ -29,7 +29,7 @@
         <th>txs</th>
         <td>
         {% for tx in transactions %}
-          {{ tx }}<br>
+          <a href="/transaction?txid={{ tx }}" target="_blank" style="text-decoration: none;">{{ tx }}</a<br>
         {% endfor %}
         </td>
       </tr>
