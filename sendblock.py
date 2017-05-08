@@ -23,6 +23,7 @@ def main():
     block_hash = str(sys.argv[1])
     block = zcash(block_hash)
     block['arrivaltime'] = timestamp
+    block['nextblockhash'] = block.get('nextblockhash', None)
     session = requests.session()
     session.headers.update({'Content-Type': 'application/json'})
     r = session.post(config.BLOCK_OBSERVATORY_URL, json=block)
