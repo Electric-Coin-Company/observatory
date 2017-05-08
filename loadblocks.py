@@ -45,8 +45,13 @@ def main():
                        end_point if (end_point < num_blocks) else end_point):
             block = get_block(str(x))
             if block is not None:
-                r = session.post(config.BLOCK_OBSERVATORY_URL, json=block)
-                r.raise_for_status()
+                try:
+                    r = session.post(config.BLOCK_OBSERVATORY_URL, json=block)
+                    r.raise_for_status()
+                except requests.exceptions.HTTPError as err:
+                    print(err)
+                    pass
+                    continue
                 print('Uploaded block ' + str(x) + '.')
             else:
                 continue
