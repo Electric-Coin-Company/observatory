@@ -4,12 +4,14 @@
 This is a configuration file for the Zcash block observatory.
 """
 
+
 class ShowBlocksFlaskConfig(object):
     DEBUG = True
     TESTING = True
     TEMPLATE_DEBUG = True
     TEMPLATES_AUTO_RELOAD = True
     SECRET_KEY = 'lQT0EE/XcyZrXDjCCJ/KRs3F2zKc0Ls3KAmT4y0pxp4='
+
 
 class ShowBlocksConfig(object):
     BIND_PORT = 8201
@@ -18,9 +20,11 @@ class ShowBlocksConfig(object):
     BLOCKS_CACHE_SIZE = 500
     BLOCKS_CACHE_TIMEOUT = 300
 
+
 class ReceiveBlocksFlaskConfig(object):
     DEBUG = True
     TESTING = True
+
 
 class ReceiveBlocksConfig(object):
     BIND_PORT = 8200
@@ -28,18 +32,15 @@ class ReceiveBlocksConfig(object):
     DB_ARGS = {'timeout': float(30)}
     LOAD_MISSING_BLOCKS = False
 
-class LoadBlocksConfig(object):
+
+class BlockObservatoryConfig(object):
     START_BLOCK_HEIGHT = 0
-    END_BLOCK_HEIGHT = 109231
-    BLOCK_OBSERVATORY_URL = 'http://127.0.0.1:8200/'
-    ZCASH_CLI_PATH = '/usr/bin/zcash-cli'
-
-class LoadBlocksConfig(object):
+    END_BLOCK_HEIGHT = 110483
     BLOCK_OBSERVATORY_URL = 'http://127.0.0.1:8200/'
     ZCASH_CLI_PATH = '/usr/bin/zcash-cli'
 
 
-class ZcashConfig(filename='zcash.conf'):
+def ZcashConfig(filename='zcash.conf'):
     import os
     home = os.getenv("HOME")
     if not home:

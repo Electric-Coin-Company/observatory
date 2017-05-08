@@ -9,26 +9,13 @@ import subprocess
 import sys
 import time
 from flask import Flask, request
-
-import config
+from config import ReceiveBlocksFlaskConfig, ReceiveBlocksConfig as config
 app = Flask(__name__)
-app.config.from_object(config.ReceiveBlocksConfig)
-
-
-def optimize_db(conn):
-    c = conn.cursor()
-    c.execute('PRAGMA journal_mode = WAL')
-    c.execute('PRAGMA page_size = 8096')
-    c.execute('PRAGMA temp_store = 2')
-    c.execute('PRAGMA synchronous = 0')
-    c.execute('PRAGMA cache_size = 8192000')
-    conn.commit()
-    return
+app.config.from_object(ReceiveBlocksFlaskConfig)
 
 
 def createdb():
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     c = conn.cursor()
 
     c.execute('CREATE TABLE IF NOT EXISTS tx( \
@@ -62,8 +49,7 @@ def createdb():
 
 
 def find_gaps():
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT (t1.height + 1) AS start, \
@@ -98,8 +84,7 @@ def fill_gaps(gaps):
 
 
 def storeblock(block):
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     c = conn.cursor()
     try:
         c.execute('INSERT INTO blocks (hash, confirmations, size, height, version, merkleroot, tx, txs, \
@@ -120,14 +105,14 @@ def storeblock(block):
             try:
                 c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
                           {"nextblockhash": block['nextblockhash'], "hash": block['hash']})
-                print('Updated nextblockhash on block ' + block['height'])
+                print('Updated nextblockhash on block ' + str(block['height']))
             except sqlite3.Error as err:
                 print(err)
                 pass
         try:
             c.execute('UPDATE blocks SET confirmations=:confirmations WHERE hash=:hash',
                       {"confirmations": block['confirmations'], "hash": block['hash']})
-            print('Updated confirmations on block ' + block['height'])
+            print('Updated confirmations on block ' + str(block['height']))
         except sqlite3.Error as err:
             print(err)
             pass
@@ -152,7 +137,7 @@ def index():
 
 @app.before_first_request
 def fix_missing_blocks():
-    if app.config['LOAD_MISSING_BLOCKS']:
+    if config.LOAD_MISSING_BLOCKS:
         while len(find_gaps()) > 0:
             fill_gaps(find_gaps())
             time.sleep(10)
@@ -161,7 +146,7 @@ def fix_missing_blocks():
 
 def main():
     createdb()
-    app.run(host='0.0.0.0', port=int(app.config['BIND_PORT']))
+    app.run(host='0.0.0.0', port=int(config.BIND_PORT))
 
 
 if __name__ == '__main__':

@@ -7,14 +7,14 @@ import ast
 import re
 import sqlite3
 import time
+import sys
 from flask import Flask, render_template, request
-
 from werkzeug.contrib.cache import SimpleCache
-cache = SimpleCache()
+from config import ShowBlocksFlaskConfig, ShowBlocksConfig as config
 
-import config
 app = Flask(__name__)
-app.config.from_object(config.ShowBlocksConfig)
+app.config.from_object(ShowBlocksFlaskConfig)
+cache = SimpleCache()
 
 
 def optimize_db(conn):
@@ -29,8 +29,11 @@ def optimize_db(conn):
 
 
 def stats(count=False, txs=False, height=False, diff=False):
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    try:
+        conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
+    except Exception as err:
+        print(err)
+        sys.exit(1)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     summary = {}
@@ -51,8 +54,7 @@ def stats(count=False, txs=False, height=False, diff=False):
 
 
 def find_block_by_tx(txid):
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT hash FROM tx WHERE tx=:txid', {"txid": txid})
@@ -62,8 +64,7 @@ def find_block_by_tx(txid):
 
 
 def find_block_by_height(block_height):
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT hash FROM blocks WHERE height=:height', {"height": block_height})
@@ -73,21 +74,19 @@ def find_block_by_height(block_height):
 
 
 def get_single_block(block_hash):
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT * FROM blocks WHERE hash=:hash', {"hash": block_hash})
     block = c.fetchone()
     conn.close()
     transactions = ast.literal_eval(block['tx'])
-    confirmations = (stats('count') - block['height']) + 1
+    confirmations = (stats(height=True)['height'] - block['height']) + 1
     return dict(block), list(transactions), int(confirmations)
 
 
 def get_blocks(num_blocks=-1):
-    conn = sqlite3.connect(app.config['DB_FILE'], timeout=30)
-    optimize_db(conn)
+    conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT hash, height, size, txs, time FROM blocks ORDER by height DESC LIMIT ' + (str(num_blocks) if (int(num_blocks) > 0) else str('-1')))
@@ -130,7 +129,6 @@ def index():
 
 @app.route('/block', methods=['GET', 'POST'])
 def show_block():
-    print('Searching: ' + request.values.get('search'))
     search_string = validate_input(request.values.get('search').strip().lower())
     if search_string is None:
         print('Error: Search string was invalid.')
@@ -169,8 +167,8 @@ def main():
     print('Block ' + str(census['height']) + ' is the most recent one.')
     print(str(census['count']) + ' blocks available for search.')
     print(str(census['diff']) + ' blocks seem missing from the database.')
-    cache.set('blocks', get_blocks(app.config('BLOCKS_CACHE_SIZE')), timeout=app.config('BLOCKS_CACHE_TIMEOUT'))
-    app.run(host='0.0.0.0', port=int(app.config['BIND_PORT']), debug=app.config['DEBUG'])
+    cache.set('blocks', get_blocks(config.BLOCKS_CACHE_SIZE), timeout=config.BLOCKS_CACHE_TIMEOUT)
+    app.run(host='0.0.0.0', port=int(config.BIND_PORT), debug=app.config['DEBUG'])
 
 
 if __name__ == '__main__':

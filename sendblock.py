@@ -8,9 +8,7 @@ import time
 import subprocess
 import sys
 import requests
-
-from config import SendBlocksConfig
-config = SendBlocksConfig
+from config import BlockObservatoryConfig as config
 
 
 def zcash(block_hash):
@@ -27,7 +25,7 @@ def main():
     block['arrivaltime'] = timestamp
     session = requests.session()
     session.headers.update({'Content-Type': 'application/json'})
-    r = session.post(config['BLOCK_OBSERVATORY_URL'], json=block)
+    r = session.post(config.BLOCK_OBSERVATORY_URL, json=block)
     r.raise_for_status()
     sys.exit(0)
 

@@ -7,6 +7,7 @@ import re
 REQUIREMENTS = [pkg.strip() for pkg in open("requirements.txt").readlines()]
 long_description = open("README.md").read()
 
+
 def file_list(path):
     files = []
     subdirs = [subdir[0] for subdir in os.walk(path)]
@@ -20,6 +21,7 @@ def file_list(path):
                 files.append(os.path.join(subdir, filename))
     filtered = [x for x in files if not regex.match(x)]
     return list(set(filtered))
+
 
 setup(
     name="zcash-block-observatory",
@@ -38,5 +40,5 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
-   ]
+    ]
 )
