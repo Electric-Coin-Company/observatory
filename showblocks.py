@@ -82,7 +82,7 @@ def cached_blocks():
 
 def validate_input(search_string):
     if search_string.isdigit():
-        if int(search_string) <= stats['height']:
+        if int(search_string) <= blockcount():
             print('Search is numeric but not less than the current block height.')
             return search_string
     if len(search_string) != 64:
