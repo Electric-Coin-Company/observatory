@@ -61,7 +61,7 @@ def get_block(block_height):
     return json.loads((output.decode('utf-8')))
 
 
-def optimize_db(conn):
+def optimizedb(conn):
     c = conn.cursor()
     c.execute('PRAGMA journal_mode = WAL')
     c.execute('PRAGMA page_size = 8096')
