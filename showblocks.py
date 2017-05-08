@@ -99,8 +99,7 @@ def get_blocks(num_blocks=-1):
 def cached_blocks():
     if cache.get('blocks') is None:
         cache.set('blocks', get_blocks(config.BLOCKS_CACHE_SIZE), timeout=config.BLOCKS_CACHE_TIMEOUT)
-    else:
-        return cache.get('blocks')
+    return cache.get('blocks')
 
 
 def validate_input(search_string):
