@@ -96,7 +96,7 @@ def get_blocks(num_blocks=-1):
     return blocks
 
 
-def blocks():
+def cached_blocks():
     if cache.get('blocks') is None:
         cache.set('blocks', get_blocks(config.BLOCKS_CACHE_SIZE), timeout=config.BLOCKS_CACHE_TIMEOUT)
     else:
@@ -126,7 +126,7 @@ def _jinja2_filter_timestamp(unix_epoch):
 @app.route('/')
 def index():
     try:
-        blocks = blocks()
+        blocks = cached_blocks()
     except Exception as e:
         print('Error retreving blocks from the local database.')
         print(e)
