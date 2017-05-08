@@ -3,6 +3,7 @@
 """
 This is a Python Flask web application for storing Zcash blocks from elsewhere.
 """
+import atexit
 import json
 import sqlite3
 import subprocess
@@ -50,6 +51,11 @@ def createdb():
     conn.commit()
 
 
+def closedb():
+    conn.close()
+    atexit.register(closedb)
+
+
 def find_gaps():
     c = conn.cursor()
     c.execute('SELECT (t1.height + 1) AS start, \
@@ -59,7 +65,6 @@ def find_gaps():
         GROUP BY height HAVING end IS NOT NULL \
         ORDER BY end DESC')
     gaps = [dict(gap) for gap in c.fetchall()]
-    conn.close()
     if gaps == []:
         return None
     else:
@@ -144,6 +149,7 @@ def fix_missing_blocks():
 
 def main():
     createdb()
+    atexit.register(closedb)
     app.run(host='0.0.0.0', port=int(config.BIND_PORT))
 
 
