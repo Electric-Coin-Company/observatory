@@ -29,7 +29,7 @@ class ReceiveBlocksFlaskConfig(object):
 class ReceiveBlocksConfig(object):
     BIND_PORT = 8200
     DB_FILE = 'blocks.sqlite'
-    DB_ARGS = {'timeout': float(30)}
+    DB_ARGS = {'timeout': float(20), 'detect_types': int(1), 'check_same_thread': bool(False)}
     LOAD_MISSING_BLOCKS = False
 
 
