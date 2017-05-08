@@ -8,13 +8,14 @@ import json
 import sqlite3
 from flask import Flask, request
 from config import ReceiveBlocksFlaskConfig, ReceiveBlocksConfig as config
+from helpers import optimizedb
 
 app = Flask(__name__)
 app.config.from_object(ReceiveBlocksFlaskConfig)
 
 conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
 conn.row_factory = sqlite3.Row
-
+optimizedb(conn)
 
 def createdb():
     c = conn.cursor()

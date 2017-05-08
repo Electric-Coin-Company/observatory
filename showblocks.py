@@ -21,7 +21,6 @@ cache = SimpleCache()
 
 conn = sqlite3.connect(config.DB_FILE, **config.DB_ARGS)
 conn.row_factory = sqlite3.Row
-atexit.register(closedb)
 
 def stats(count=False, txs=False, height=False, diff=False):
     try:
@@ -71,7 +70,6 @@ def get_single_block(block_hash):
 def get_blocks(num_blocks=-1):
     c = conn.cursor()
     c.execute('SELECT hash, height, size, txs, time FROM blocks ORDER by height DESC LIMIT ' + (str(num_blocks) if (int(num_blocks) > 0) else str('-1')))
-    # return retrieved blocks as a dict
     blocks = [dict(block) for block in c.fetchall()]
     return blocks
 
@@ -153,6 +151,7 @@ def main():
     print('Block ' + str(census['height']) + ' is the most recent one.')
     print(str(census['count']) + ' blocks available for search.')
     print(str(census['diff']) + ' blocks seem missing from the database.')
+    atexit.register(closedb)
     app.run(host='0.0.0.0', port=int(config.BIND_PORT), debug=app.config['DEBUG'])
 
 
