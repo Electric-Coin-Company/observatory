@@ -98,26 +98,12 @@ def storeblock(block):
                    block['merkleroot'], json.dumps(block['tx']), len(block['tx']), block['time'], block['nonce'],
                    block['bits'], block['difficulty'], block['chainwork'], block['anchor'], block.get('previousblockhash', None),
                    block.get('nextblockhash', None), block.get('arrivaltime', None)))
-        try:
+        if block['nextblockhash'] is None:
             c.execute('UPDATE blocks SET nextblockhash = (?) WHERE hash = (?)', (block['hash'], block['previousblockhash']))
-        except sqlite3.Error as err:
-            print(err)
-            pass
-    except sqlite3.Error as err:
-        print(err)
-        if block['nextblockhash'] is not None:
-            try:
-                c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
+        else:
+            c.execute('UPDATE blocks SET nextblockhash=:nextblockhash WHERE hash=:hash',
                           {"nextblockhash": block['nextblockhash'], "hash": block['hash']})
-                print('Updated nextblockhash on block ' + str(block['height']))
-            except sqlite3.Error as err:
-                print(err)
-                pass
-        try:
-            c.execute('UPDATE blocks SET confirmations=:confirmations WHERE hash=:hash',
-                      {"confirmations": block['confirmations'], "hash": block['hash']})
-            print('Updated confirmations on block ' + str(block['height']))
-        except sqlite3.Error as err:
+    except sqlite3.Error as err:
             print(err)
             pass
     for tx in block['tx']:
@@ -126,6 +112,7 @@ def storeblock(block):
         except sqlite3.Error as err:
             print(err)
             pass
+            continue
     conn.commit()
     return
 
